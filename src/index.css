@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@theme {
+  /* Map custom CSS variables to Tailwind v4 color tokens */
+  --color-border: hsl(var(--border));
+  /* Slate palette used across the app */
+  --color-slate-900: #0f172a;
+  --color-slate-800: #1e293b;
+  --color-slate-700: #334155;
+  --color-slate-600: #475569;
+  --color-slate-500: #64748b;
+  /* Gray palette used for text/placeholder */
+  --color-gray-200: #e5e7eb;
+  --color-gray-400: #9ca3af;
+}
+
+/* CSS Custom Properties */
+:root {
+  --border: 214.3 31.8% 91.4%;
+}
+
+/* Custom base styles */
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-slate-900 text-gray-200 font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  html {
+    @apply scroll-smooth;
+  }
+}
+
+/* Custom components */
+@layer components {
+  .btn-primary {
+    @apply bg-[#7B61FF] hover:bg-[#6a52e0] text-white font-bold py-3 px-8 rounded-lg text-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#7B61FF] focus:ring-offset-2 focus:ring-offset-slate-900;
+  }
+  
+  .btn-secondary {
+    @apply bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-8 rounded-lg text-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-900;
+  }
+  
+  .card {
+    @apply bg-slate-800/50 rounded-lg border border-slate-700 shadow-lg transition-all duration-300 hover:border-[#7B61FF] hover:-translate-y-1;
+  }
+  
+  .input-field {
+    @apply block w-full px-4 py-3 rounded-md bg-slate-800 border border-slate-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#7B61FF] focus:border-transparent transition-colors;
+  }
+}
+
+/* Custom utilities */
+@layer utilities {
+  .text-shadow-glow {
+    text-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse-slow 3s ease-in-out infinite;
+  }
+}
+
+/* Custom animations */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Focus styles for accessibility */
+@layer base {
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible {
+    @apply outline-2 outline-[#7B61FF] outline-offset-2;
+  }
+}
