@@ -1,26 +1,28 @@
-import React, { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+"use client"; // Required for client-side components in Next.js App Router
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { MenuIcon, XIcon, BotIcon } from "./Icons.jsx";
 
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const location = useLocation();
-    const navigate = useNavigate();
+    const pathname = usePathname(); // Get current route
+    const router = useRouter(); // For programmatic navigation
 
     const navLinks = [
         { name: "Home", path: "/" },
         { name: "Services", path: "/services" },
         { name: "About", path: "/about" },
         { name: "Contact", path: "/contact" },
-        { name: "Dashboard", path: "/dashboard" }
+        { name: "Dashboard", path: "/dashboard" },
     ];
 
-    const isActive = (path) => location.pathname === path;
+    const isActive = (path) => pathname === path;
 
     const handleMobileNavClick = (path) => {
-        navigate(path);
+        router.push(path); // Navigate programmatically
         setIsMenuOpen(false);
-    }
+    };
 
     return (
         <nav className="bg-slate-900/80 backdrop-blur-sm sticky top-0 z-50 border-b border-slate-700">
@@ -28,7 +30,7 @@ const Navbar = () => {
                 <div className="flex items-center justify-between h-16">
                     <div className="flex items-center">
                         <Link
-                            to="/"
+                            href="/"
                             className="flex-shrink-0 text-white text-2xl font-bold flex items-center"
                         >
                             <BotIcon className="h-8 w-8 text-[#7B61FF] mr-2" />
@@ -40,11 +42,12 @@ const Navbar = () => {
                             {navLinks.map((link) => (
                                 <Link
                                     key={link.name}
-                                    to={link.path}
-                                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive(link.path)
+                                    href={link.path}
+                                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                                        isActive(link.path)
                                             ? "bg-slate-700 text-white"
                                             : "text-gray-300 hover:bg-slate-700 hover:text-white"
-                                        }`}
+                                    }`}
                                 >
                                     {link.name}
                                 </Link>
@@ -52,10 +55,16 @@ const Navbar = () => {
                         </div>
                     </div>
                     <div className="hidden md:block">
-                        <button onClick={() => navigate("/login")} className="bg-slate-800 text-gray-300 hover:bg-slate-700 px-4 py-2 rounded-md text-sm font-medium transition-colors mr-2">
+                        <button
+                            onClick={() => router.push("/login")}
+                            className="bg-slate-800 text-gray-300 hover:bg-slate-700 px-4 py-2 rounded-md text-sm font-medium transition-colors mr-2"
+                        >
                             Login
                         </button>
-                        <button onClick={() => navigate("/signup")} className="bg-[#7B61FF] text-white hover:bg-[#6a52e0] px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                        <button
+                            onClick={() => router.push("/signup")}
+                            className="bg-[#7B61FF] text-white hover:bg-[#6a52e0] px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                        >
                             Sign Up
                         </button>
                     </div>
@@ -81,21 +90,28 @@ const Navbar = () => {
                         {navLinks.map((link) => (
                             <Link
                                 key={link.name}
-                                to={link.path}
+                                href={link.path}
                                 onClick={() => setIsMenuOpen(false)}
-                                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${isActive(link.path)
+                                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                                    isActive(link.path)
                                         ? "bg-slate-700 text-white"
                                         : "text-gray-300 hover:bg-slate-700 hover:text-white"
-                                    }`}
+                                }`}
                             >
                                 {link.name}
                             </Link>
                         ))}
                         <div className="pt-2 px-2 border-t border-slate-700">
-                            <button onClick={() => handleMobileNavClick('/login')} className="w-full text-left bg-slate-800 text-gray-300 hover:bg-slate-700 px-3 py-2 rounded-md text-base font-medium transition-colors mb-2">
+                            <button
+                                onClick={() => handleMobileNavClick("/login")}
+                                className="w-full text-left bg-slate-800 text-gray-300 hover:bg-slate-700 px-3 py-2 rounded-md text-base font-medium transition-colors mb-2"
+                            >
                                 Login
                             </button>
-                            <button onClick={() => handleMobileNavClick('/signup')} className="w-full text-left bg-[#7B61FF] text-white hover:bg-[#6a52e0] px-3 py-2 rounded-md text-base font-medium transition-colors">
+                            <button
+                                onClick={() => handleMobileNavClick("/signup")}
+                                className="w-full text-left bg-[#7B61FF] text-white hover:bg-[#6a52e0] px-3 py-2 rounded-md text-base font-medium transition-colors"
+                            >
                                 Sign Up
                             </button>
                         </div>

@@ -1,5 +1,7 @@
+"use client"; // required for client-side interactivity
 import React from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   BotIcon,
   ClipboardIcon,
@@ -18,9 +20,10 @@ const FeatureCard = ({ icon, title, children }) => (
 );
 
 const HomePage = () => {
+  const router = useRouter();
+
   return (
     <>
-      {/* ... (paste the entire content of the HomePage component here) ... */}
       {/* Hero Section */}
       <div className="relative text-white text-center py-20 md:py-32 px-4 overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -39,10 +42,13 @@ const HomePage = () => {
             reclaim your productivity.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link to="/services" className="btn-primary">
+            <Link href="/services" className="btn-primary">
               Explore Features
             </Link>
-            <button className="btn-secondary">
+            <button
+              onClick={() => router.push("/signup")}
+              className="btn-secondary"
+            >
               Get Started
             </button>
           </div>
@@ -134,7 +140,10 @@ const HomePage = () => {
         <p className="text-lg text-gray-400 mb-8">
           Join the future of work today.
         </p>
-        <button className="btn-primary bg-gradient-to-r from-[#7B61FF] to-[#00FFFF] text-slate-900 hover:from-[#6a52e0] hover:to-[#00CCCC]">
+        <button
+          onClick={() => router.push("/signup")}
+          className="btn-primary bg-gradient-to-r from-[#7B61FF] to-[#00FFFF] text-slate-900 hover:from-[#6a52e0] hover:to-[#00CCCC]"
+        >
           Sign Up for Free
         </button>
       </div>
