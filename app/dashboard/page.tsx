@@ -3,21 +3,27 @@
 import type React from "react"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Edit2, Trash2, LogOut, LayoutGrid, Calendar, X } from "lucide-react"
+import { 
+  Plus, Edit2, Trash2, LogOut, 
+  Calendar, X, Bot, Clock, 
+  Video, FileText, CheckCircle2 
+} from "lucide-react"
 
-interface Item {
+interface Meeting {
   id: string
   title: string
-  description: string
+  guestName: string
+  time: string
   date: string
+  status: "Confirmed" | "Pending AI Negotiation"
 }
 
 export default function DashboardPage() {
   const router = useRouter()
-  const [items, setItems] = useState<Item[]>([])
+  const [meetings, setMeetings] = useState<Meeting[]>([])
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [formData, setFormData] = useState({ title: "", description: "" })
+  const [formData, setFormData] = useState({ title: "", guestName: "", time: "" })
   const [userName, setUserName] = useState("")
 
   useEffect(() => {
@@ -27,35 +33,35 @@ export default function DashboardPage() {
       return
     }
     setUserName(localStorage.getItem("userName") || "Explorer")
-    const savedItems = localStorage.getItem("dashboardItems")
-    if (savedItems) setItems(JSON.parse(savedItems))
+    const saved = localStorage.getItem("chronoMeetings")
+    if (saved) setMeetings(JSON.parse(saved))
   }, [router])
 
-  const saveItems = (updatedItems: Item[]) => {
-    setItems(updatedItems)
-    localStorage.setItem("dashboardItems", JSON.stringify(updatedItems))
+  const saveMeetings = (updated: Meeting[]) => {
+    setMeetings(updated)
+    localStorage.setItem("chronoMeetings", JSON.stringify(updated))
   }
 
-  const handleAddItem = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.title.trim()) return
 
     if (editingId) {
-      const updatedItems = items.map((item) =>
-        item.id === editingId ? { ...item, title: formData.title, description: formData.description } : item,
+      const updated = meetings.map((m) =>
+        m.id === editingId ? { ...m, ...formData } : m
       )
-      saveItems(updatedItems)
+      saveMeetings(updated)
       setEditingId(null)
     } else {
-      const newItem: Item = {
+      const newMeeting: Meeting = {
         id: Date.now().toString(),
-        title: formData.title,
-        description: formData.description,
+        ...formData,
         date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        status: "Confirmed"
       }
-      saveItems([newItem, ...items])
+      saveMeetings([newMeeting, ...meetings])
     }
-    setFormData({ title: "", description: "" })
+    setFormData({ title: "", guestName: "", time: "" })
     setShowForm(false)
   }
 
@@ -68,118 +74,116 @@ export default function DashboardPage() {
     <main className="min-h-screen bg-[#0a0a0b] text-white pt-24 pb-20 px-6">
       <div className="max-w-6xl mx-auto">
         
-        {/* Top Navigation / Stats Bar */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-white to-white/40 bg-clip-text text-transparent">
-              Welcome back, {userName}
+            <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-white via-purple-200 to-white/40 bg-clip-text text-transparent">
+              {userName}'s Calendar
             </h1>
-            <p className="text-gray-500 mt-1">Here is what’s happening with your projects today.</p>
+            <p className="text-gray-500 mt-2 flex items-center gap-2">
+              <Bot className="w-4 h-4 text-purple-400" />
+              Chrono AI has optimized 4 slots for you today.
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowForm(true)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-indigo-500/20"
+              className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-2xl font-black transition-all hover:bg-purple-50 active:scale-95 shadow-lg shadow-white/5"
             >
-              <Plus className="w-4 h-4" />
-              New Project
+              <Plus className="w-5 h-5" />
+              Schedule Meeting
             </button>
-            <button
-              onClick={handleLogout}
-              className="p-2.5 bg-white/5 border border-white/10 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
-            >
+            <button onClick={handleLogout} className="p-3 bg-white/5 border border-white/10 text-gray-400 hover:text-red-400 rounded-2xl transition-all">
               <LogOut className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Modal Overlay for Form (Classier than inline) */}
-        {showForm && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-[#0a0a0b]/80 backdrop-blur-sm">
-            <form 
-              onSubmit={handleAddItem}
-              className="w-full max-w-lg bg-[#111113] border border-white/10 rounded-[2.5rem] p-8 shadow-2xl animate-in fade-in zoom-in duration-200"
-            >
-              <div className="flex justify-between items-center mb-8">
-                <h3 className="text-2xl font-bold">{editingId ? "Edit Item" : "Create New Item"}</h3>
-                <button type="button" onClick={() => {setShowForm(false); setEditingId(null)}} className="text-gray-500 hover:text-white">
-                  <X className="w-6 h-6" />
-                </button>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+          {[
+            { label: "Total Meetings", val: meetings.length, icon: <Calendar className="text-purple-400" /> },
+            { label: "AI Negotiated", val: "12", icon: <Bot className="text-indigo-400" /> },
+            { label: "Time Saved", val: "4.5h", icon: <Clock className="text-emerald-400" /> },
+          ].map((stat, i) => (
+            <div key={i} className="bg-[#111113] border border-white/5 p-6 rounded-[2rem] flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">{stat.label}</p>
+                <p className="text-2xl font-bold mt-1">{stat.val}</p>
               </div>
+              <div className="p-3 bg-white/5 rounded-2xl">{stat.icon}</div>
+            </div>
+          ))}
+        </div>
 
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-400 ml-1">Project Title</label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-5 py-3 bg-[#161618] border border-white/5 rounded-2xl text-white focus:outline-none focus:border-indigo-500/50 transition-all"
-                    placeholder="E.g. Website Redesign"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-400 ml-1">Description</label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={4}
-                    className="w-full px-5 py-3 bg-[#161618] border border-white/5 rounded-2xl text-white focus:outline-none focus:border-indigo-500/50 transition-all resize-none"
-                    placeholder="What are the details?"
-                  />
-                </div>
-                <button type="submit" className="w-full py-4 bg-white text-black font-bold rounded-2xl hover:bg-indigo-50 transition-all">
-                  {editingId ? "Save Changes" : "Create Item"}
+        {/* Modal Form */}
+        {showForm && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#0a0a0b]/90 backdrop-blur-md">
+            <form onSubmit={handleSubmit} className="w-full max-w-lg bg-[#111113] border border-white/10 rounded-[2.5rem] p-10 shadow-2xl scale-up-center">
+              <div className="flex justify-between items-center mb-8">
+                <h3 className="text-2xl font-bold">New Appointment</h3>
+                <button type="button" onClick={() => setShowForm(false)} className="text-gray-500 hover:text-white"><X /></button>
+              </div>
+              <div className="space-y-4">
+                <input
+                  placeholder="Meeting Title"
+                  value={formData.title}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  className="w-full px-5 py-4 bg-[#161618] border border-white/5 rounded-2xl text-white focus:outline-none focus:border-purple-500/50"
+                />
+                <input
+                  placeholder="Guest Email / Name"
+                  value={formData.guestName}
+                  onChange={(e) => setFormData({...formData, guestName: e.target.value})}
+                  className="w-full px-5 py-4 bg-[#161618] border border-white/5 rounded-2xl text-white focus:outline-none focus:border-purple-500/50"
+                />
+                <input
+                  type="time"
+                  value={formData.time}
+                  onChange={(e) => setFormData({...formData, time: e.target.value})}
+                  className="w-full px-5 py-4 bg-[#161618] border border-white/5 rounded-2xl text-white focus:outline-none focus:border-purple-500/50"
+                />
+                <button type="submit" className="w-full py-4 bg-purple-600 text-white font-bold rounded-2xl hover:bg-purple-500 transition-all">
+                  {editingId ? "Update Schedule" : "Start AI Negotiation"}
                 </button>
               </div>
             </form>
           </div>
         )}
 
-        {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {items.length === 0 ? (
-            <div className="col-span-full py-20 border-2 border-dashed border-white/5 rounded-[3rem] flex flex-col items-center justify-center text-center">
-              <div className="p-4 bg-white/5 rounded-full mb-4">
-                <LayoutGrid className="w-8 h-8 text-gray-600" />
-              </div>
-              <p className="text-gray-400 text-lg">No projects found. Ready to start something new?</p>
+        {/* Meetings List */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold px-2">Upcoming Schedule</h2>
+          {meetings.length === 0 ? (
+            <div className="py-20 bg-[#111113] border-2 border-dashed border-white/5 rounded-[3rem] text-center">
+              <Calendar className="w-12 h-12 text-gray-700 mx-auto mb-4" />
+              <p className="text-gray-500">No upcoming meetings. Your AI is resting.</p>
             </div>
           ) : (
-            items.map((item) => (
-              <div
-                key={item.id}
-                className="group relative bg-[#111113] border border-white/5 p-8 rounded-[2.5rem] hover:border-indigo-500/30 transition-all duration-300 shadow-sm hover:shadow-indigo-500/5"
-              >
-                <div className="flex justify-between items-start mb-6">
-                  <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full">
-                    <Calendar className="w-3 h-3" />
-                    {item.date}
+            meetings.map((m) => (
+              <div key={m.id} className="group bg-[#111113] border border-white/5 p-6 rounded-[2rem] flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-purple-500/30 transition-all">
+                <div className="flex items-center gap-6">
+                  <div className="h-16 w-16 bg-purple-500/10 rounded-2xl flex flex-col items-center justify-center border border-purple-500/20">
+                    <span className="text-[10px] font-bold text-purple-400 uppercase">{m.date.split(' ')[0]}</span>
+                    <span className="text-xl font-bold">{m.date.split(' ')[1]}</span>
                   </div>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button 
-                      onClick={() => { setFormData({title: item.title, description: item.description}); setEditingId(item.id); setShowForm(true); }}
-                      className="p-2 hover:bg-white/5 rounded-lg text-gray-400 hover:text-white transition-colors"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button 
-                      onClick={() => { if(confirm("Delete?")) saveItems(items.filter(i => i.id !== item.id)) }}
-                      className="p-2 hover:bg-red-500/10 rounded-lg text-gray-400 hover:text-red-400 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                  <div>
+                    <h4 className="text-lg font-bold group-hover:text-purple-300 transition-colors">{m.title}</h4>
+                    <p className="text-gray-500 text-sm flex items-center gap-2">
+                      <Video className="w-3 h-3" /> With {m.guestName} • <Clock className="w-3 h-3" /> {m.time || "TBD"}
+                    </p>
                   </div>
                 </div>
-                
-                <h4 className="text-xl font-bold mb-3 group-hover:text-indigo-400 transition-colors">{item.title}</h4>
-                <p className="text-gray-400 text-sm leading-relaxed line-clamp-3">
-                  {item.description || "No description provided for this project."}
-                </p>
 
-                <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
-                  <span className="text-[11px] font-medium text-gray-600 uppercase tracking-tighter">Status: Active</span>
-                  <div className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                <div className="flex items-center gap-4">
+                  <div className="flex -space-x-2">
+                    <div className="w-8 h-8 rounded-full bg-indigo-500 border-2 border-[#111113]" />
+                    <div className="w-8 h-8 rounded-full bg-purple-500 border-2 border-[#111113]" />
+                  </div>
+                  <div className="flex gap-2">
+                    <button className="p-2 bg-white/5 rounded-xl text-gray-400 hover:text-white transition-colors"><FileText className="w-4 h-4" /></button>
+                    <button onClick={() => {saveMeetings(meetings.filter(x => x.id !== m.id))}} className="p-2 bg-red-500/5 rounded-xl text-red-500/50 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                  </div>
                 </div>
               </div>
             ))
